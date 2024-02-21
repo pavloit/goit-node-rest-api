@@ -2,11 +2,9 @@ import Joi from "joi";
 
 export const createContactSchema = Joi.object({
     name: Joi.string().required(),
-    email: Joi.string().email(),
+    email: Joi.string().email().required(),
     phone: Joi.number().required(),
 })
-    .min(2)
-    .message("at least name and phone are required");
 
 export const updateContactSchema = Joi.object({
     name: Joi.string(),
