@@ -64,3 +64,7 @@ export const updateSubscription = async (req, res, next) => {
         next(error);
     }
 };
+
+export async function uploadAvatar(req, res, next) {
+    res.send("Upload avatar");
+}

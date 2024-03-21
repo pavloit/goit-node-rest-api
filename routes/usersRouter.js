@@ -11,5 +11,7 @@ router.post("/login", validateBody(userSchema), usersController.login);
 router.post("/logout", authMiddleware, usersController.logout);
 router.get("/current", authMiddleware, usersController.getCurrentUser);
 router.patch("/", authMiddleware, validateBody(subscriptionSchema), usersController.updateSubscription);
+router.patch("/avatar", authMiddleware, usersController.uploadAvatar);
+
 
 export default router;
