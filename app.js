@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import contactsRouter from "./routes/contactsRouter.js";
 import usersRouter from "./routes/usersRouter.js";
 import authMiddleware from "./middlewares/authMiddleware.js";
-
+import * as path from "node:path";
 
 const app = express();
 const DB_URI = process.env.DB_URI;
@@ -29,6 +29,8 @@ app.use(express.json());
 
 app.use("/api/users", usersRouter);
 app.use("/api/contacts", authMiddleware, contactsRouter);
+app.use('/avatars', express.static(path.join(process.cwd(), "public/avatars")));
+
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });

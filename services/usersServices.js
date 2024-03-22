@@ -3,17 +3,17 @@ import jwt from "jsonwebtoken";
 import User from "../db/user.js";
 import HttpError from "../helpers/HttpError.js";
 
-export const registerUser = async (email, password) => {
+export const registerUser = async (email, password, avatarURL) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw HttpError(409, "Email in use");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword });
+    const user = new User({ email, password: hashedPassword, avatarURL });
     await user.save();
 
-    return { email, subscription: user.subscription };
+    return { email, subscription: user.subscription, avatarURL };
 };
 
 export const loginUser = async (email, password) => {
