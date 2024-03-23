@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../db/user.js";
+import User from "../models/user.js";
 
 const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -8,21 +8,24 @@ const authMiddleware = async (req, res, next) => {
     }
     const [bearer, token] = authHeader.split(" ", 2);
 
-    if (!authHeader || bearer !== "Bearer" ) {
-        return res.status(401).send({message: "Invalid token" })
+    if (!authHeader || bearer !== "Bearer") {
+        return res.status(401).send({ message: "Invalid token" })
     }
 
-    try {     
+    try {
         const { userId } = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(userId);
 
         if (!user || token !== user.token) {
             return res.status(401).send({ message: "Not authorized" });
         }
+        if (!user.verify) {
+            return res.status(401).send({ message: "Yoor account is not verified" });
+        }
         req.user = user;
         next();
     } catch (error) {
-       console.log(error);
+        console.log(error);
         return res.status(401).json({ message: "Not authorized" });
     }
 };

@@ -1,8 +1,8 @@
-import Contact from "../db/contacts.js";
+import Contact from "../models/contacts.js";
 import HttpError from "../helpers/HttpError.js";
 
 async function listContacts({ page = 1, limit = 20, favorite, owner } = {}) {
-    
+
     const skip = (page - 1) * limit;
     const filter = favorite
         ? { favorite: true, ownerId: owner }
@@ -42,7 +42,7 @@ async function removeContact(contactId) {
     }
 }
 
-async function addContact({ name, email, phone }, ownerId ) {
+async function addContact({ name, email, phone }, ownerId) {
     try {
         const newContact = new Contact({ name, email, phone, ownerId });
         await newContact.save();

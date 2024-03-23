@@ -1,5 +1,5 @@
 import * as usersService from "../services/usersServices.js";
-import User from "../db/user.js";
+import User from "../models/user.js";
 import gravatar from "gravatar";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
@@ -22,6 +22,40 @@ export const register = async (req, res, next) => {
         next(error);
     }
 };
+
+export async function verify(req, res, next) {
+    const { token } = req.params;
+
+    try {
+        const user = await User.findOne({ verificationToken: token })
+        if (user === null) {
+            return res.status(404).send({ message: "Not found" });
+        }
+        await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null });
+        res.send({message: "Email confirmed successfully"});
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function verifyRequest(req, res, next) {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ email })
+        if (user === null) {
+            return res.status(404).send({ message: "Not found" });
+        }
+        if (user.verify) {
+            return res.status(404).send({ message: "Verification has already been passed" })
+        }        
+        const result = await usersService.emailResend(email);
+        return res.status(200).json(result).end();
+    } catch (error) {
+        next(error);
+    }
+}
+
 
 export const login = async (req, res, next) => {
     const { email, password } = req.body;
@@ -89,27 +123,27 @@ export async function uploadAvatar(req, res, next) {
         await image.resize(250, 250).writeAsync(imagePath);
 
         await fs.rename(
-                req.file.path,
-                path.join(process.cwd(), "public/avatars", req.file.filename)
-            );
+            req.file.path,
+            path.join(process.cwd(), "public/avatars", req.file.filename)
+        );
 
-            const user = await User.findByIdAndUpdate(req.user.id,
-                { avatarURL: `http://localhost:8080/avatars/${req.file.filename}` },
-                { new: true }
-            );
-            if (user === null) {
-                return res.status(404).send({ message: "User not found" })
-            }
-            res.send(user);
-        } catch (error) {
-            next(error)
+        const user = await User.findByIdAndUpdate(req.user.id,
+            { avatarURL: `http://localhost:8080/avatars/${req.file.filename}` },
+            { new: true }
+        );
+        if (user === null) {
+            return res.status(404).send({ message: "User not found" })
         }
+        res.send(user);
+    } catch (error) {
+        next(error)
+    }
 }
 
 export async function getAvatar(req, res, next) {
     try {
         const user = await User.findById(req.user.id);
-        
+
         if (user === null) {
             return res.status(404).send({ message: "User not found" })
         };
