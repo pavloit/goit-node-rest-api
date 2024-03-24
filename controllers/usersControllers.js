@@ -59,7 +59,6 @@ export async function verifyRequest(req, res, next) {
 
 export const login = async (req, res, next) => {
     const { email, password } = req.body;
-
     try {
         const result = await usersService.loginUser(email, password);
         res.status(200).json(result);

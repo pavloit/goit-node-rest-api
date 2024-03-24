@@ -1,7 +1,7 @@
 import Contact from "../models/contacts.js";
 import HttpError from "../helpers/HttpError.js";
 
-async function listContacts({ page = 1, limit = 20, favorite, owner } = {}) {
+async function listContacts({ page, limit, favorite, owner } = {}) {
 
     const skip = (page - 1) * limit;
     const filter = favorite
@@ -18,24 +18,18 @@ async function listContacts({ page = 1, limit = 20, favorite, owner } = {}) {
     }
 }
 
-async function getContactById(contactId) {
+async function getContactById(_id, ownerId) {
     try {
-        const contact = await Contact.findById(contactId);
-        if (!contact) {
-            throw HttpError(404, "Contact not found");
-        }
+        const contact = await Contact.findOne({ _id, ownerId });
         return contact;
     } catch (error) {
         throw HttpError(500, "Error getting contact by ID");
     }
 }
 
-async function removeContact(contactId) {
+async function removeContact(_id, ownerId) {
     try {
-        const contact = await Contact.findByIdAndDelete(contactId);
-        if (!contact) {
-            throw HttpError(404, "Contact not found");
-        }
+        const contact = await Contact.findOneAndDelete({ _id, ownerId });
         return contact;
     } catch (error) {
         throw HttpError(500, "Error removing contact");
@@ -52,9 +46,9 @@ async function addContact({ name, email, phone }, ownerId) {
     }
 }
 
-async function updateContact(id, updatedContact) {
+async function updateContact(_id, updatedContact, ownerId) {
     try {
-        const contact = await Contact.findByIdAndUpdate(id, updatedContact, {
+        const contact = await Contact.findOneAndUpdate({_id, ownerId}, updatedContact, {
             new: true,
         });
         if (!contact) {
@@ -66,29 +60,12 @@ async function updateContact(id, updatedContact) {
     }
 }
 
-async function updateStatusContact(id, favorite) {
-    try {
-        const contact = await Contact.findByIdAndUpdate(
-            id,
-            { favorite },
-            { new: true }
-        );
-        if (!contact) {
-            throw HttpError(404, "Contact not found");
-        }
-        return contact;
-    } catch (error) {
-        throw HttpError(500, "Error updating contact status");
-    }
-}
-
 const contactsService = {
     listContacts,
     getContactById,
     removeContact,
     addContact,
     updateContact,
-    updateStatusContact,
 };
 
 export default contactsService;
